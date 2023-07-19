@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Prosumer App - Charts</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        /* CSS-Regeln für den Container des Wetterdiagramms */
+        #wetter-chart-container {
+            width: 700px;
+            height: 600px;
+            margin: 0 auto;
+            margin-bottom: -200px;
+        }
+
+        /* CSS-Regeln für den Container des Stromvorhersagediagramms */
+        #stromvorhersage-chart-container {
+            width: 700px;
+            height: 600px;
+            margin: 0 auto;
+            margin-bottom: -200px;
+        }
+
+        /* CSS-Regeln für den Container des Preisdiagramms */
+        #preisdaten-chart-container {
+            width: 700px;
+            height: 600px;
+            margin: 0 auto;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="col">
+        <div class="card mb-4">
+            <div class="card-header"><strong>Wetterdaten</strong></div>
+            <div class="card-body">
+                <div id="wetter-chart-container">
+                    <canvas id="wetter-chart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mb-4">
+            <div class="card-header"><strong>Stromvorhersage</strong></div>
+            <div class="card-body">
+                <div id="stromvorhersage-chart-container">
+                    <canvas id="stromvorhersage-chart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mb-4">
+            <div class="card-header"><strong>Preisdaten</strong></div>
+            <div class="card-body">
+                <form id="preisdaten-form">
+                    <label for="monat">Monat:</label>
+                    <input type="text" id="monat" name="m" required>
+
+                    <label for="tag">Tag:</label>
+                    <input type="text" id="tag" name="t" required>
+
+                    <label for="stunde">Stunde:</label>
+                    <input type="text" id="stunde" name="s" required>
+
+                    <button type="submit">Chart anzeigen</button>
+                </form>
+                <div id="preisdaten-chart-container">
+                    <canvas id="preisdaten-chart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <script>
+            // Wetterdaten
+            const wetterdaten = <%- JSON.stringify(wetterdaten) %>;
+
+            const chartData = {
+                labels: ['temperatur', 'Luftfeuchtigkeit', 'Windgeschwindigkeit'],
+                datasets: [{
+                    label: wetterdaten.dt,
+                    backgroundColor: 'rgba(54, 162, 235, 0.6)',
+                    borderColor: 'rgba(54, 162, 235, 1)',
+                    borderWidth: 1,
+                    data: [
+                        wetterdaten.temperatur,
+                        wetterdaten.Luftfeuchtigkeit,
+                        wetterdaten.Windgeschwindigkeit
+                    ]
+                }]
+            };
+
+            const ctx = document.getElementById('wetter-chart').getContext('2d');
+            new Chart(ctx, {
+                type: 'bar',
+                data: chartData,
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+
+            // Stromvorhersage
+            const jsonData2 = <%- JSON.stringify(vorhersagedaten) %>;
+            const stromvorhersageChart = new Chart(document.getElementById('stromvorhersage-chart'), {
+                type: 'line',
+                data: {
+                    labels: jsonData2.heute.map(data => data.stunde),
+                    datasets: [{
+                        label: 'Heute',
+                        data: jsonData2.heute.map(data => data.wert),
+                        backgroundColor: 'rgba(54, 162, 235, 0.6)',
+                        borderColor: 'rgba(54, 162, 235, 1)',
+                        borderWidth: 1
+                    },
+                    {
+                        label: 'Morgen',
+                        data: jsonData2.morgen.map(data => data.wert),
+                        backgroundColor: 'rgba(255, 99, 132, 0.6)',
+                        borderColor: 'rgba(255, 99, 132, 1)',
+                        borderWidth: 1
+                    },
+                    {
+                        label: 'Übermorgen',
+                        data: jsonData2.uebermorgen.map(data => data.wert),
+                        backgroundColor: 'rgba(75, 192, 192, 0.6)',
+                        borderColor: 'rgba(75, 192, 192, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+
+            // Preisdaten
+            const jsonData3 = <%- JSON.stringify(preisdaten) %>;
+            const preisdatenForm = document.getElementById('preisdaten-form');
+            const preisdatenChart = new Chart(document.getElementById('preisdaten-chart'), {
+                type: 'bar',
+                data: {
+                    labels: ['Preiswert'],
+                    datasets: [{
+                        label: 'Preiswert',
+                        backgroundColor: 'rgba(54, 162, 235, 0.6)',
+                        borderColor: 'rgba(54, 162, 235, 1)',
+                        borderWidth: 1,
+                        data: [jsonData3.preiswert]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+
+            preisdatenForm.addEventListener('submit', function(event) {
+                event.preventDefault();
+                const monat = document.getElementById('monat').value;
+                const tag = document.getElementById('tag').value;
+                const stunde = document.getElementById('stunde').value;
+                const url = `/api/combined/combined?m=${monat}&t=${tag}&s=${stunde}`;
+
+                // Änderung der API-URL
+                preisdatenForm.action = url;
+
+                // Absenden des Formulars
+                preisdatenForm.submit();
+            });
+
+        </script>
+    </div>
+</body>
+
+</html>
