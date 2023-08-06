@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Energiemanagement System</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <h1>Energiemanagement System</h1>
+    <h2>Informations de la batterie :</h2>
+    <canvas id="batteryChart"></canvas>
+    <p>Solar Generation: <%- batteryInfo.solarGeneration %> kWh</p>
+    <p>Energy Consumption: <%- batteryInfo.energyConsumption %> kWh</p>
+    <p>Energy To Grid: <%- batteryInfo.energyToGrid %> kWh</p>
+    <p>Energy From Grid: <%- batteryInfo.energyFromGrid %> kWh</p>
+    <p>Earnings: <%- batteryInfo.earnings %> €</p>
+    <p>Expenses: <%- batteryInfo.expenses %> €</p>
+
+    <script>
+        // Récupérez les données de la batterie depuis le modèle EJS
+        const batteryInfo = <%- JSON.stringify(batteryInfo) %>;
+    
+        // Récupérez le contexte du graphique
+        const ctx = document.getElementById('batteryChart').getContext('2d');
+    
+        // Créez un graphique en utilisant les données de la batterie
+        const batteryChart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: ['Solar Generation', 'Energy Consumption', 'Energy To Grid', 'Energy From Grid', 'Earnings', 'Expenses'],
+                datasets: [{
+                    label: 'Battery Information',
+                    data: [batteryInfo.solarGeneration, batteryInfo.energyConsumption, batteryInfo.energyToGrid, batteryInfo.energyFromGrid, batteryInfo.earnings, batteryInfo.expenses],
+                    backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                    borderColor: 'rgba(75, 192, 192, 1)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+    </script>
+    
+
+    <h2>Akku-Einstellungen :</h2>
+<p>Aufladungsschwellenwert: <%= simulatedBatteryParams.rechargeThreshold %></p>
+<p>Entladungsschwellenwert: <%= simulatedBatteryParams.dechargeThreshold %></p>
+</body>
+</html>
